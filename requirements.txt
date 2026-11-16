@@ -1,0 +1,9 @@
+pandas
+numpy
+pyarrow
+scikit-learn
+optbinning
+lightgbm
+joblib
+streamlit
+snowflake-connector-python[pandas]

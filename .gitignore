@@ -1,0 +1,11 @@
+data/
+tests/test_loans.csv
+__pycache__/
+.env
+.venv/
+*.pyc
+
+# Large raw data files. Never upload these.
+*.csv.gz
+accepted_2007_to_2018q4.csv/
+rejected_2007_to_2018q4.csv/
