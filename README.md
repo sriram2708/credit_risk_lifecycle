@@ -2,7 +2,7 @@
 
 A full credit risk project on public personal loan data. It covers the same work a risk modelling team does: prepare data, build a scorecard, test a machine learning challenger, estimate expected credit loss, and monitor the model over time. A Streamlit app shows the results.
 
-**Live app:** add your link here after you deploy
+**Live app:** https://sriram-credit-risk.streamlit.app/
 
 ## What it does
 
