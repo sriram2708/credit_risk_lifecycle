@@ -19,11 +19,27 @@ Run on 589,488 loans. Train 143,892, test 162,570, monitor 283,026.
 
 1. Bad rate: 12.7 percent in training, 13.7 percent in the test year, 14.9 percent in the monitor year.
 2. Scorecard test Gini 0.283 and KS 0.203. Training Gini is 0.294, so the model is not overfitted.
-3. Challenger test Gini 0.321 and KS 0.236. The gain over the scorecard is 0.038 Gini.
+3. Challenger test Gini 0.321 and KS 0.233. The gain over the scorecard is 0.038 Gini.
 4. Base case expected loss rate on the 2015 book is 5.8 percent. The actual loss rate was 7.4 percent. The downside case (7.2 percent) is the closest to what happened.
 5. Monitoring: scores stayed stable (PSI below 0.01 in every quarter) and Gini held between 0.27 and 0.30. The model under predicted bad loans in 2015. The actual bad rate was 14 to 20 percent above the predicted rate, so all four 2015 quarters are amber.
 
 The main finding: the model kept ranking borrowers well, but its level went out of date. Borrowers with the same score defaulted more often in 2015 than in 2012 and 2013. A stability check alone would have missed this. The fix in practice is to recalibrate the model on recent loans.
+
+## Snowflake
+
+The raw loans are loaded into `CREDIT_RISK.RAW.LOANS` (2,260,668 rows). The modelling table and a quarterly summary are built in SQL, and the monitoring results are written back to Snowflake.
+
+**Bad rate by quarter** (`CREDIT_RISK.MART.BAD_RATE_BY_QUARTER`)
+
+![Bad rate by quarter in Snowflake](images/snowflake_bad_rate_by_quarter.jpeg)
+
+The bad rate falls from 14.2 percent in mid 2012 to 11.9 percent at the end of 2013, then rises to around 15 percent through 2015. Loan volume grows more than ten times over the same period.
+
+**Model monitoring** (`CREDIT_RISK.MART.MONITORING`)
+
+![Model monitoring results in Snowflake](images/snowflake_monitoring.jpeg)
+
+Scores stay stable in every quarter (PSI below 0.01) and Gini holds between 0.27 and 0.30, but the actual bad rate runs 14 to 20 percent above the predicted rate in 2015, so those quarters are flagged amber.
 
 ## How the data is split
 
@@ -64,16 +80,13 @@ Download the Lending Club accepted loans file (2007 to 2018) from Kaggle. The fi
 
 ### 4. Connect to Snowflake
 
-Set these environment variables before you run the steps.
+Snowflake no longer accepts a plain password from scripts, so the project signs in with a programmatic access token.
 
-```
-SNOWFLAKE_ACCOUNT=your_account_identifier
-SNOWFLAKE_USER=your_user_name
-SNOWFLAKE_PASSWORD=your_password_or_access_token
-SNOWFLAKE_WAREHOUSE=COMPUTE_WH
-```
+1. Run `sql/setup_snowflake.sql` once in a Snowsight worksheet. It creates the warehouse `CREDIT_RISK_WH`, the database `CREDIT_RISK` and the schemas `RAW` and `MART`.
+2. Change the user name in `sql/setup_access_token.sql` to yours, then run it in Snowsight. The last statement returns the token. It is shown only once.
+3. Copy `.env.example`, name the copy `.env`, fill in your account identifier and user name, and paste the token into `SNOWFLAKE_PASSWORD`.
 
-If Snowflake refuses a plain password, create a programmatic access token in the Snowflake web page and use it as the password. If the variables are not set, every step still runs on your computer without Snowflake.
+The `.env` file is in `.gitignore`, so the token is never uploaded. If `.env` is missing, every step still runs on your computer without Snowflake.
 
 ### 5. Run the steps on the real data
 

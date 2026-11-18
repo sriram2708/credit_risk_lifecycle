@@ -9,3 +9,4 @@ __pycache__/
 *.csv.gz
 accepted_2007_to_2018q4.csv/
 rejected_2007_to_2018q4.csv/
+.vscode/

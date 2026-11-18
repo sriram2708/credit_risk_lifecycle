@@ -16,6 +16,7 @@ for name in APP_PACKAGES:
         lines.append(f"{name}=={version(name)}")
     except PackageNotFoundError:
         lines.append(name)
-lines.append("snowflake-connector-python[pandas]")
+lines.append("snowflake-connector-python[pandas,secure-local-storage]")
+lines.append("python-dotenv")
 Path(__file__).with_name("requirements.txt").write_text("\n".join(lines) + "\n")
 print("\n".join(lines))

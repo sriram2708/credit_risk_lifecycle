@@ -57,22 +57,41 @@ FEATURE_LABELS = {
 }
 
 
+# Read Snowflake settings from a .env file in this folder, if one exists.
+try:
+    from dotenv import load_dotenv
+
+    load_dotenv(ROOT / ".env")
+except ImportError:
+    pass
+
+
 def use_snowflake():
-    """Snowflake is used when the account name is set as an environment variable."""
+    """Snowflake is used when the account name is set in .env or the environment."""
     return bool(os.getenv("SNOWFLAKE_ACCOUNT"))
 
 
 def get_connection():
+    """Connect to Snowflake.
+
+    Put a programmatic access token in SNOWFLAKE_PASSWORD (see
+    sql/setup_access_token.sql). If it is empty, this falls back to browser
+    sign in, which only works on accounts that use single sign on.
+    """
     import snowflake.connector
 
     settings = {
         "account": os.environ["SNOWFLAKE_ACCOUNT"],
         "user": os.environ["SNOWFLAKE_USER"],
-        "password": os.environ["SNOWFLAKE_PASSWORD"],
-        "warehouse": os.getenv("SNOWFLAKE_WAREHOUSE", "COMPUTE_WH"),
+        "warehouse": os.getenv("SNOWFLAKE_WAREHOUSE", "CREDIT_RISK_WH"),
+        "client_store_temporary_credential": True,
     }
-    if os.getenv("SNOWFLAKE_AUTHENTICATOR"):
-        settings["authenticator"] = os.environ["SNOWFLAKE_AUTHENTICATOR"]
+    if os.getenv("SNOWFLAKE_ROLE"):
+        settings["role"] = os.environ["SNOWFLAKE_ROLE"]
+    if os.getenv("SNOWFLAKE_PASSWORD"):
+        settings["password"] = os.environ["SNOWFLAKE_PASSWORD"]
+    else:
+        settings["authenticator"] = os.getenv("SNOWFLAKE_AUTHENTICATOR", "externalbrowser")
     return snowflake.connector.connect(**settings)
 
 
